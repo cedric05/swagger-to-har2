@@ -1,6 +1,6 @@
 {
   "name": "dothttp-swagger2har",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Generate HAR objects from Swagger specs",
   "files": [
     "dist"
