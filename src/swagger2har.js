@@ -72,6 +72,31 @@ var createHar = function(swagger, path, method, baseUrl, queryParamValues) {
  * @return {object}
  */
 var getPayload = function(swagger, path, method) {
+  if (swagger['openapi'] && swagger['openapi'].startsWith('3')) {
+    if (swagger.paths[path][method].requestBody &&  swagger.paths[path][method].requestBody.content){
+      var content = swagger.paths[path][method].requestBody.content
+      for(var key in content){
+        if (key === 'application/json'){
+          var schema = content[key].schema
+          if (schema.$ref){
+            var ref = schema.$ref.split('/').slice(-1)[0]
+            schema = getResolvedSchema(swagger, swagger.components.schemas[ref])
+          }
+          var data = JSON.stringify();
+          try {
+            data = JSONSchemaSampler.sample(schema)
+          } catch (error) {
+            data = instantiator.instantiate(schema);
+          }
+          return {
+            mimeType: "application/json",
+            text: JSON.stringify(data)
+          }
+        }
+      }
+    }
+  }
+  else 
   if (typeof swagger.paths[path][method].parameters !== "undefined") {
     for (var i in swagger.paths[path][method].parameters) {
       var param = swagger.paths[path][method].parameters[i]
@@ -124,7 +149,11 @@ var getResolvedSchema = function(swagger, schema) {
         var prop = schema.properties[propKey]
         if (typeof prop["$ref"] === "string" && !/^http/.test(prop["$ref"])) {
           var ref = prop["$ref"].split("/").slice(-1)[0]
-          schema.properties[propKey] = swagger.definitions[ref]
+          if (swagger.definitions){
+            schema.properties[propKey] = swagger.definitions[ref]
+          } else {
+            schema.properties[propKey] = swagger.components.schemas[ref]
+          }
         }
         getResolvedSchema(swagger, schema.properties[propKey])
       }
@@ -134,7 +163,11 @@ var getResolvedSchema = function(swagger, schema) {
       for (var itemKey in schema.items) {
         if (itemKey === "$ref" && !/^http/.test(schema.items[itemKey])) {
           var ref2 = schema.items["$ref"].split("/").slice(-1)[0]
-          schema.items = swagger.definitions[ref2]
+          if (swagger.definitions){
+            schema.items = swagger.definitions[ref2]
+          } else {
+            schema.items = swagger.components.schemas[ref2]
+          }
         }
         getResolvedSchema(swagger, schema.items)
       }
