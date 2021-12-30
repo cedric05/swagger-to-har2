@@ -1,6 +1,6 @@
 {
   "name": "swagger-to-har2",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Generate HAR objects from Swagger specs",
   "files": [
     "dist"
@@ -27,7 +27,7 @@
     "yaml-js": "^0.2.3"
   },
   "scripts": {
-    "build": "set BABEL_ENV=production &&  node .\\node_modules\\.bin\\rollup --config build/rollup.config.js",
+    "build": "set BABEL_ENV=production &&  npx rollup --config build/rollup.config.js",
     "test": "BABEL_ENV=test jest"
   },
   "keywords": [

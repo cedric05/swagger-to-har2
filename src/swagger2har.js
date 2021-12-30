@@ -235,8 +235,8 @@ var getQueryStrings = function(swagger, path, method, values) {
             typeof values[param.name] === "undefined"
               ? typeof param.default === "undefined"
                 ? swagger.openapi
-                  ? "<SOME_" + (param.schema ? param.schema : { "type": "string" }).type.toUpperCase() + "_VALUE>"
-                  : "<SOME_" + param.type.toUpperCase() + "_VALUE>"
+                  ? "<SOME_" + (param.schema ? (param.schema.type ?  param.schema.type : ""): "").toUpperCase() + "_VALUE>"
+                  : "<SOME_" + (param.type? param.type: "").toUpperCase() + "_VALUE>"
                 : param.default + ""
               : values[param.name] + "" /* adding a empty string to convert to string */
         })
@@ -295,7 +295,10 @@ var getHeadersArray = function(swagger, path, method) {
           }
           param = resolveRef(swagger, param["$ref"])
         }
-        var paramType = swagger.openapi ? param.schema.type: param.type
+        var paramType = (swagger.openapi ? param.schema.type: param.type)
+        if (!paramType){
+            paramType = ""
+        }
         headers.push({
           name: param.name,
           value: "<SOME_" + paramType.toUpperCase() + "_VALUE>"
